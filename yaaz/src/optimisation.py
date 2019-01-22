@@ -62,7 +62,7 @@ class Optimisation(object):
                 state = env.build_state(T=8)
                 mini_batch += [state]
                 probabilities = np.zeros((73, 8, 8))
-                actual_probabilities = env.filter_illegal_probabilities(probabilities, is_training=True, q=policies[action])
+                actual_probabilities = env.filter_illegal_probabilities(probabilities, is_training=True, q=environment['policies'][action])
                 actual_probabilities = np.ndarray.flatten(actual_probabilities)
                 actual_policies += [actual_probabilities]
 
