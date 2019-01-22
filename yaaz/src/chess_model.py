@@ -16,15 +16,25 @@
  #   limitations under the License.                                            #
  ###############################################################################
 
+from chess_model_configuration import ChessModelConfiguration
+
 from keras.optimizers import SGD
-from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, Add
+from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, add
 from keras.models import Model
-from keras import losses
+from keras import regularizers
+
+import numpy as np
 
 
 class ChessModel(object):
+    """
+    Inspired from :
+    https://github.com/AppliedDataSciencePartners/DeepReinforcementLearning/blob/master/model.py
+    http://discovery.ucl.ac.uk/10045895/1/agz_unformatted_nature.pdf (Mastering the Game of Go without Human Knowledge, DeepMind, 2017)
+    """
 
-    def __init__(self):
+    def __init__(self, configuration=ChessModelConfiguration()):
+        self._configuration = configuration
         self._model = self._build()
 
     def predict(self, state):
@@ -36,56 +46,153 @@ class ChessModel(object):
     def save(self, path):
         self._model.save(path)
 
-    def _residual_layer(self, x):
-        res_block = Conv2D(76, kernel_size=4, padding='same', strides=1)(x)
-        res_block = BatchNormalization()(res_block)
-        res_block = ReLU()(res_block)
-        res_block = Conv2D(76, kernel_size=4, padding='same', strides=1)(res_block)
-        res_block = BatchNormalization()(res_block)
-        res_block = Add()([x, res_block])
-        res_block = ReLU()(res_block)
-        return res_block
-        
-    def _policy_head(self, x):
-        policy = Conv2D(2, kernel_size=1, padding='same', strides=1)(x)
-        policy = BatchNormalization()(policy)
-        policy = ReLU()(policy)
-        policy = Flatten()(policy)
-        policy = Dense(8 * 8 * 73, name = 'policy_head')(policy)
-        return policy
-        
-    def _value_head(self, x):
-        value = Conv2D(1, kernel_size=1, padding='same', strides=1)(x)
-        value = BatchNormalization()(value)
-        value = ReLU()(value)
-        value = Flatten()(value)
-        value = Dense(256)(value)
-        value = ReLU()(value)
-        value = Dense(1, activation='tanh', name = 'value_head')(value)
-        return value
-        
-    def _loss_function(self, y_true, y_pred):
-        loss1 = losses.mean_squared_error(y_true, y_pred)
-        loss2 = losses.categorical_crossentropy(y_true, y_pred)
-        return loss1 + loss2
-        
-    def _build(self):
-        input_stack = Input(shape=(119, 8, 8))
-        x = Conv2D(76, kernel_size=4, strides=1, padding='same', input_shape=(119, 8, 8))(input_stack)
+    def _residual_layer(self, input_block, filters, kernel_size):
+        # 1. 2. 3.
+        x = self._conv_layer(input_block, filters, kernel_size)
+
+        # 4. A convolution of 256 filters of kernel size 3 x 3 with stride 1
+        x = Conv2D(
+            filters=filters,
+            kernel_size=kernel_size,
+            data_format='channels_first',
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const)
+        )(x)
+
+        # 5. Batch normalisation
         x = BatchNormalization()(x)
+
+        # 6. A skip connection that adds the input to the block
+        x = add([input_block, x])
+
+        # 7. A rectifier non-linearity
         x = ReLU()(x)
-        for i in range(2):
-            x = self._residual_layer(x)
-        policy = self._policy_head(x)
-        value = self._value_head(x)
-        losses = {"value_head": "mean_squared_error", "policy_head": "categorical_crossentropy"}
-        loss_weights = {"policy_head": .5, "value_head": .5}
-        model = Model(inputs=input_stack, outputs=(policy, value))
-        
+
+        return (x)
+
+    def _conv_layer(self, x, filters, kernel_size, input_shape=None):
+        # 1. A convolution of 256 filters of kernel size 3 x 3 with stride 1
+        x = Conv2D(
+            filters=filters,
+            kernel_size=kernel_size,
+            data_format="channels_first",
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const),
+            input_shape=input_shape
+        )(x)
+
+        # 2. Batch normalisation
+        x = BatchNormalization()(x)
+
+        # 3. A rectifier non-linearity
+        x = ReLU()(x)
+
+        return (x)
+
+    def _value_head(self, x):
+
+        # 1. A convolution of 1 filter of kernel size 1 x 1 with stride 1
+        x = Conv2D(
+            filters=1,
+            kernel_size=(1, 1),
+            data_format='channels_first',
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const)
+        )(x)
+
+        # 2. Batch normalisation
+        x = BatchNormalization()(x)
+
+        # 3. A rectifier non-linearity
+        x = ReLU()(x)
+
+        x = Flatten()(x)
+
+        # 4. A fully connected linear layer to a hidden layer of size 256
+        x = Dense(
+            20,
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const)
+        )(x)
+
+        # 5. A rectifier non-linearity
+        x = ReLU()(x)
+
+        # 6. A fully connected linear layer to a scalar
+        x = Dense(
+            1,
+            use_bias=False,
+            activation='tanh', # 7. A tanh non-linearity outputting a scalar in the range [-1, 1]
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const),
+            name='value_head',
+        )(x)
+
+        return (x)
+
+    def _policy_head(self, x):
+
+        # 1. A convolution of 2 filters of kernel size 1 x 1 with stride 1
+        x = Conv2D(
+            filters=2,
+            kernel_size=(1, 1),
+            data_format='channels_first',
+            padding='same',
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const)
+        )(x)
+
+        # 2. Batch normalization
+        x = BatchNormalization()(x)
+
+        # 3. A rectifier non-linearity
+        x = ReLU()(x)
+
+        x = Flatten()(x)
+
+        """
+        4. A fully connected linear layer that outputs a vector
+        of size 8 * 8 * 73
+        """
+        x = Dense(
+            self._configuration.output_dim,
+            use_bias=False,
+            activation='linear',
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const),
+            name = 'policy_head'
+        )(x)
+
+        return (x)
+
+    def _build(self):
+        main_input = Input(shape=self._configuration.input_dim, name='main_input')
+
+        x = self._conv_layer(
+            main_input,
+            self._configuration.hidden_layers[0]['filters'],
+            self._configuration.hidden_layers[0]['kernel_size'],
+            self._configuration.input_dim
+        )
+
+        if len(self._configuration.hidden_layers) > 1:
+            for h in self._configuration.hidden_layers[1:]:
+                x = self._residual_layer(x, h['filters'], h['kernel_size'])
+
+        ph = self._policy_head(x)
+        vh = self._value_head(x)
+
+        model = Model(inputs=[main_input], outputs=[ph, vh])
         model.compile(
-            loss=losses,
-            optimizer=SGD(lr=0.1, momentum=0.9),
-            loss_weights=loss_weights
+            loss={'value_head': 'mean_squared_error', 'policy_head': 'categorical_crossentropy'},
+            optimizer=SGD(lr=self._configuration.learning_rate, momentum=self._configuration.momentum),
+            loss_weights={'value_head': 0.5, 'policy_head': 0.5}
         )
 
         return model

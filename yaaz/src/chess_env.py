@@ -164,7 +164,7 @@ class ChessEnv(object):
                     probabilies[z][y2][x2] = q[legal_moves.index(move)]
                 except:
                     ConsoleLogger.error('len(q): {} probabilies.shape: {} probabilies[z][y2][x2].shape: {} z: {} y2: {} x2: {}' \
-                        'legal_moves.index(move): {}'.format( \
+                        ' legal_moves.index(move): {}'.format( \
                         len(q), probabilies.shape, probabilies[z][y2][x2].shape, z, y2, x2, legal_moves.index(move) \
                     ))
             else:

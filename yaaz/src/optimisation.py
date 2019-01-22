@@ -67,7 +67,7 @@ class Optimisation(object):
                 actual_policies += [actual_probabilities]
 
             for i in range(len(environment_batch)):
-                labels = {'policy_head': np.reshape(actual_policies[i], (1, 4672)), 'value_head': np.array(values[i])} 
+                labels = {'policy_head': np.reshape(actual_policies[i], (1, 8 * 8 * 73)), 'value_head': np.array(values[i])} 
                 history = self._model.fit(mini_batch[i], labels)
                 losses += [history.history['loss']]
             print(np.mean(losses))
