@@ -37,21 +37,21 @@ class ChessModel(object):
         self._model.save(path)
 
     def _residual_layer(self, x):
-        resBlock = Conv2D(76, kernel_size=4, padding='same', strides=1)(x)
-        resBlock = BatchNormalization()(resBlock)
-        resBlock = ReLU()(resBlock)
-        resBlock = Conv2D(76, kernel_size=4, padding='same', strides=1)(resBlock)
-        resBlock = BatchNormalization()(resBlock)
-        resBlock = Add()([x, resBlock])
-        resBlock = ReLU()(resBlock)
-        return resBlock
+        res_block = Conv2D(76, kernel_size=4, padding='same', strides=1)(x)
+        res_block = BatchNormalization()(res_block)
+        res_block = ReLU()(res_block)
+        res_block = Conv2D(76, kernel_size=4, padding='same', strides=1)(res_block)
+        res_block = BatchNormalization()(res_block)
+        res_block = Add()([x, res_block])
+        res_block = ReLU()(res_block)
+        return res_block
         
     def _policy_head(self, x):
         policy = Conv2D(2, kernel_size=1, padding='same', strides=1)(x)
         policy = BatchNormalization()(policy)
         policy = ReLU()(policy)
         policy = Flatten()(policy)
-        policy = Dense(4672, name = 'policy_head')(policy)
+        policy = Dense(8 * 8 * 73, name = 'policy_head')(policy)
         return policy
         
     def _value_head(self, x):
