@@ -20,6 +20,10 @@ from agent import Agent
 from chess_env import ChessEnv
 from environment import Environment
 from error_handling.console_logger import ConsoleLogger
+from chess_model import ChessModel
+from dataset import Dataset
+
+import os
 
 
 class Evaluator(object):
@@ -35,7 +39,7 @@ class Evaluator(object):
         agent2_victories = 0
         draws = 0
 
-        for epoch in self._environments_number:
+        for epoch in range(self._environments_number):
             ConsoleLogger.status('[EVALUATOR] epoch #{}'.format(epoch))
             env = ChessEnv()
             agent1 = Agent(env, current_best_model)
@@ -57,4 +61,11 @@ class Evaluator(object):
             ConsoleLogger.success("[EVALUATOR] agent2's model is better - erase the previous one")
             self._dataset.erase_best_model(self._new_model)
         else:
-            ConsoleLogger.status('[EVALUATOR] agent1 it still has the best model')
+            ConsoleLogger.status('[EVALUATOR] agent1 it still the best model')
+
+if __name__ == "__main__":
+    dataset = Dataset(results_path='..' + os.sep + '..' + os.sep + 'results' + os.sep + 'chess')
+    new_model = ChessModel()
+
+    evaluator = Evaluator(dataset, new_model, environments_number=3)
+    evaluator.start()

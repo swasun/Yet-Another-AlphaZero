@@ -44,7 +44,7 @@ class ChessModelConfiguration(object):
 
     @property
     def hidden_layers(self):
-        return self.hidden_layers
+        return self._hidden_layers
 
     @property
     def reg_const(self):
@@ -52,7 +52,7 @@ class ChessModelConfiguration(object):
 
     @property
     def learning_rate(self):
-        return self.learning_rate
+        return self._learning_rate
 
     @property
     def momentum(self):

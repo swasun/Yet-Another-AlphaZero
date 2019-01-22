@@ -72,7 +72,7 @@ class ChessModel(object):
 
         return (x)
 
-    def _conv_layer(self, x, filters, kernel_size, input_shape=None):
+    def _conv_layer(self, x, filters, kernel_size):
         # 1. A convolution of 256 filters of kernel size 3 x 3 with stride 1
         x = Conv2D(
             filters=filters,
@@ -81,8 +81,7 @@ class ChessModel(object):
             padding='same',
             use_bias=False,
             activation='linear',
-            kernel_regularizer=regularizers.l2(self._configuration.reg_const),
-            input_shape=input_shape
+            kernel_regularizer=regularizers.l2(self._configuration.reg_const)
         )(x)
 
         # 2. Batch normalisation
@@ -177,8 +176,7 @@ class ChessModel(object):
         x = self._conv_layer(
             main_input,
             self._configuration.hidden_layers[0]['filters'],
-            self._configuration.hidden_layers[0]['kernel_size'],
-            self._configuration.input_dim
+            self._configuration.hidden_layers[0]['kernel_size']
         )
 
         if len(self._configuration.hidden_layers) > 1:
