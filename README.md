@@ -2,7 +2,7 @@ Yet another AlphaZero program, applied to chess (school project, 2018).
 
 Iterative implementation using Keras.
 
-## Usage
+# Usage
 
 Clone project
 ```bash
@@ -25,7 +25,7 @@ Run the evaluator module to evaluate the best module.
 python3 evaluator.py
 ```
 
-## Dependencies
+# Dependencies
 
 * python3
 * numpy
@@ -33,7 +33,13 @@ python3 evaluator.py
 * python-chess (https://pypi.org/project/python-chess/)
 * A GPU compatible with CUDA
 
-## References
+# Cross-plateform
+
+Successfully tested on the following OS (64 bits):
+* Ubuntu 18.04
+* Windows 10
+
+# References
 
 [1] Silver, D., Schrittwieser, J., Simonyan, K., Antonoglou, I., Huang, A., Guez, A., Hubert, T., Baker, L., Lai, M., Bolton, A., Chen, Y., Lillicrap, T., Hui, F., Sifre, L., van den Driessche, G., Graepel, T. & Hassabis, D. (2017). Mastering the game of Go without human knowledge. Nature, 550, 354--.
 
