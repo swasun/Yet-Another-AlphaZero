@@ -70,8 +70,8 @@ class Optimisation(object):
                 labels = {'policy_head': np.reshape(actual_policies[i], (1, 8 * 8 * 73)), 'value_head': np.array(values[i])} 
                 history = self._model.fit(mini_batch[i], labels)
                 losses += [history.history['loss']]
+
             print(np.mean(losses))
-            self._dataset.record_model(self._model)
 
 if __name__ == "__main__":
     dataset = Dataset(results_path='..' + os.sep + '..' + os.sep + 'results' + os.sep + 'chess')

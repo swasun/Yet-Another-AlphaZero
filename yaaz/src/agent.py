@@ -24,7 +24,7 @@ class Agent(object):
     def __init__(self, env, model):
         self._env = env
         self._model = model
-        self._mcts = MCTS(self._env, 100, 0, self._model)
+        self._mcts = MCTS(self._env, 5, 0, self._model)
         self._policies = list()
 
     @property

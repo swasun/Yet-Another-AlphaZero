@@ -18,7 +18,7 @@
 
 from agent import Agent
 from chess_env import ChessEnv
-from environment import Environment
+from environment_simulator import EnvironmentSimulator
 from error_handling.console_logger import ConsoleLogger
 from chess_model import ChessModel
 from dataset import Dataset
@@ -34,18 +34,23 @@ class Evaluator(object):
         self._environments_number = environments_number
 
     def start(self):
-        current_best_model = self._dataset.load_best_model()
         agent1_victories = 0
         agent2_victories = 0
         draws = 0
+
+        # Load the best model or record the first one
+        current_best_model = self._dataset.load_best_model()
+        if current_best_model is None:
+            self._dataset.record_model(self._new_model)
+            return
 
         for epoch in range(self._environments_number):
             ConsoleLogger.status('[EVALUATOR] epoch #{}'.format(epoch))
             env = ChessEnv()
             agent1 = Agent(env, current_best_model)
             agent2 = Agent(env, self._new_model)
-            environment = Environment(env, agent1, agent2)
-            result = environment.run()
+            environment_simulator = EnvironmentSimulator(env, agent1, agent2)
+            result = environment_simulator.run()
             if result == "1-0":
                 agent1_victories += 1
             elif result == "0-1":

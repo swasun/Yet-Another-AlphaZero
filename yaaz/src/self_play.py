@@ -17,7 +17,7 @@
  ###############################################################################
 
 from chess_env import ChessEnv
-from environment import Environment
+from environment_simulator import EnvironmentSimulator
 from agent import Agent
 from error_handling.console_logger import ConsoleLogger
 from chess_model import ChessModel
@@ -43,8 +43,8 @@ class SelfPlay(object):
                 env = ChessEnv()
                 agent1 = Agent(env, self._model)
                 agent2 = Agent(env, ChessModel())
-                environment = Environment(env, agent1, agent2)
-                result = environment.run()
+                environment_simulator = EnvironmentSimulator(env, agent1, agent2)
+                result = environment_simulator.run()
                 environments.append(Dataset.environment_to_dict(result, agent1.policies, env.restore_and_get_actions()))
             self._dataset.record_environment(environments)
 

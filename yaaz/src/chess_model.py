@@ -22,8 +22,9 @@ from keras.optimizers import SGD
 from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, add
 from keras.models import Model
 from keras import regularizers
-
+from keras.callbacks import TensorBoard
 import numpy as np
+from time import time
 
 
 class ChessModel(object):
@@ -41,7 +42,15 @@ class ChessModel(object):
         return self._model.predict_on_batch(state)
 
     def fit(self, state, labels):
-        return self._model.fit(state, labels, epochs=1, verbose=1, validation_split=0, batch_size=1) 
+        return self._model.fit(
+            state,
+            labels,
+            epochs=1,
+            verbose=1,
+            validation_split=0,
+            batch_size=1,
+            callbacks=[TensorBoard(log_dir="./model_logs", write_graph=True, write_images=True, histogram_freq=0)]
+        )
 
     def save(self, path):
         self._model.save(path)
