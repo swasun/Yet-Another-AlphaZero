@@ -21,6 +21,8 @@ if __name__ == "__main__":
         model = dataset.load_best_model()
         if model is None:
             model = ChessModel()
+        else:
+            model = ChessModel(model=model)
 
         # Self play module
         ConsoleLogger.status('[MAIN] Starting self play...')
@@ -34,5 +36,6 @@ if __name__ == "__main__":
 
         # Evaluate the trained model with a copy. Evaluator will save it only if it's better
         ConsoleLogger.status('[MAIN] Starting evaluation...')
-        Evaluator(dataset, copy.deepcopy(model), environments_number=3).start()
+        #Evaluator(dataset, copy.deepcopy(model), environments_number=3).start()
+        Evaluator(dataset, model.clone(), environments_number=3).start()
         ConsoleLogger.success('[MAIN] Evaluation play done')

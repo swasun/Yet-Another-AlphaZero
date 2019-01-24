@@ -20,7 +20,7 @@ from chess_model_configuration import ChessModelConfiguration
 
 from keras.optimizers import SGD
 from keras.layers import Conv2D, Flatten, Input, Dense, BatchNormalization, ReLU, add
-from keras.models import Model
+from keras.models import Model, load_model
 from keras import regularizers
 from keras.callbacks import TensorBoard
 import numpy as np
@@ -34,9 +34,14 @@ class ChessModel(object):
     http://discovery.ucl.ac.uk/10045895/1/agz_unformatted_nature.pdf (Mastering the Game of Go without Human Knowledge, DeepMind, 2017)
     """
 
-    def __init__(self, configuration=ChessModelConfiguration()):
+    def __init__(self, model=None, configuration=ChessModelConfiguration(), build_model=True):
         self._configuration = configuration
-        self._model = self._build()
+        if model:
+            self._model = model
+        elif build_model:
+            self._model = self._build()
+        else:
+            self._model = None
 
     def predict(self, state):
         return self._model.predict_on_batch(state)
@@ -49,11 +54,18 @@ class ChessModel(object):
             verbose=1,
             validation_split=0,
             batch_size=1,
-            callbacks=[TensorBoard(log_dir="./model_logs", write_graph=True, write_images=True, histogram_freq=0)]
+            callbacks=[TensorBoard(log_dir="./model_logs", histogram_freq=0)]
         )
 
     def save(self, path):
         self._model.save(path)
+
+    def clone(self):
+        new_chess_model = ChessModel(build_model=False)
+        self._model.save('temp.h5')
+        new_chess_model._model = load_model('temp.h5')
+        new_chess_model._configuration = self._configuration
+        return new_chess_model
 
     def _residual_layer(self, input_block, filters, kernel_size):
         # 1. 2. 3.
