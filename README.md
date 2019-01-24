@@ -10,6 +10,13 @@ git clone https://github.com/swasun/Yet-Another-AlphaZero
 cd Yet-Another-AlphaZero/yaaz/src
 ```
 
+You can run the main that runs iteratively self_play, optimisation and evaluator modules:
+```bash
+python3 main.py
+```
+
+Or either run each module separately:
+
 Run the self play module to generate new entries in the dataset.
 ```bash
 python3 self_play.py
