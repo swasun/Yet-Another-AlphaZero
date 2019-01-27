@@ -92,6 +92,9 @@ class ChessEnv(object):
             return "unknown"
 
     def filter_illegal_probabilities(self, probabilies, is_training, q):
+        """
+        Source: https://github.com/cbjornst/AlphaZero-Chess/blob/master/moveLogic/MCTS.py#L43
+        """
         probability = list()
         legal_moves = self.get_legal_actions()
 
