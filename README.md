@@ -1,4 +1,4 @@
-Yet another AlphaZero program, applied to chess (school project, 2018).
+Yet another AlphaZero program, applied to chess (school project, 2019).
 
 Iterative implementation using Keras.
 
