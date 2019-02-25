@@ -28,7 +28,7 @@ import os
 
 class SelfPlay(object):
 
-    def __init__(self, model, dataset, iterations=1, epochs=2):
+    def __init__(self, model, dataset, iterations=1, epochs=5):
         self._model = model
         self._dataset = dataset
         self._iterations = iterations

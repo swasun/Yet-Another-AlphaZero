@@ -33,7 +33,7 @@ class Optimisation(object):
         self._dataset = dataset
 
     def start(self):
-        environment_batches = self._dataset.load_n_last_environment_batches(1)
+        environment_batches = self._dataset.load_n_last_environment_batches(10)
         losses = list()
 
         for environment_batch in environment_batches:
